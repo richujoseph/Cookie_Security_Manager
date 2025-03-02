@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookie Security Manager</title>
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #6889b6;
+            --accent-color: #e8c547;
+            --background-color: #f5f7fa;
+            --text-color: #333;
+            --error-color: #d9534f;
+            --success-color: #5cb85c;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1, h2, h3 {
+            color: var(--primary-color);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow: auto;
+            max-height: 300px;
+        }
+        
+        .cookie-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .cookie-item:last-child {
+            border-bottom: none;
+        }
+        
+        .cookie-name {
+            font-weight: bold;
+        }
+        
+        .cookie-value {
+            color: #666;
+            word-break: break-all;
+        }
+        
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .status.success {
+            background-color: var(--success-color);
+            color: white;
+            display: block;
+        }
+        
+        .status.error {
+            background-color: var(--error-color);
+            color: white;
+            display: block;
+        }
+
+        .cookie-info {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #e6f0ff;
+            border-left: 4px solid var(--primary-color);
+            border-radius: 4px;
+        }
+
+        .secure-tag {
+            background-color: var(--success-color);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-left: 5px;
+        }
+
+        .httponly-tag {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-left: 5px;
+        }
+
+        .expires-tag {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-left: 5px;
+        }
+
+        .tab-container {
+            margin-bottom: 20px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .tab-button {
+            padding: 10px 15px;
+            background: none;
+            color: var(--text-color);
+            border: none;
+            cursor: pointer;
+        }
+
+        .tab-button.active {
+            border-bottom: 3px solid var(--accent-color);
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px 0;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cookie Security Manager</h1>
+    
+    <div class="cookie-info">
+        <h3>About Cookie Security</h3>
+        <p>Cookies help website functionality but can pose security risks if not properly managed. This tool helps you set, view, and delete cookies with proper security attributes.</p>
+    </div>
+
+    <div class="status" id="statusMessage"></div>
+
+    <div class="tab-container">
+        <div class="tab-buttons">
+            <button class="tab-button active" onclick="openTab(event, 'setCookieTab')">Set Cookie</button>
+            <button class="tab-button" onclick="openTab(event, 'viewCookiesTab')">View Cookies</button>
+            <button class="tab-button" onclick="openTab(event, 'deleteCookieTab')">Delete Cookie</button>
+        </div>
+
+        <div id="setCookieTab" class="tab-content active card">
+            <h3>Set or Update Cookie</h3>
+            <div class="input-group">
+                <input type="text" id="cookieName" placeholder="Cookie Name" required>
+                <input type="text" id="cookieValue" placeholder="Cookie Value" required>
+                <input type="number" id="cookieExpiry" placeholder="Expiry (days)" value="7">
+            </div>
+            
+            <button onclick="setCookie()">Set Cookie</button>
+        </div>
+
+        <div id="viewCookiesTab" class="tab-content card">
+            <h3>Stored Cookies</h3>
+            <button onclick="getCookies()">Refresh Cookie List</button>
+            <div id="cookieListContainer"></div>
+        </div>
+
+        <div id="deleteCookieTab" class="tab-content card">
+            <h3>Delete Cookie</h3>
+            <div class="input-group">
+                <input type="text" id="deleteCookieName" placeholder="Cookie Name" required>
+            </div>
+            <button onclick="deleteCookie()">Delete Cookie</button>
+        </div>
+    </div>
+
+    <script>
+        // Show status message
+        function showStatus(message, isError = false) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = isError ? 'status error' : 'status success';
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Tab functionality
+        function openTab(evt, tabName) {
+            const tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+            
+            const tabButtons = document.getElementsByClassName('tab-button');
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove('active');
+            }
+            
+            document.getElementById(tabName).classList.add('active');
+            evt.currentTarget.classList.add('active');
+            
+            if (tabName === 'viewCookiesTab') {
+                getCookies();
+            }
+        }
+        
+        // Set cookie
+        function setCookie() {
+            const name = document.getElementById('cookieName').value;
+            const value = document.getElementById('cookieValue').value;
+            const expiry = document.getElementById('cookieExpiry').value || 7;
+            
+            if (!name || !value) {
+                showStatus('Cookie name and value are required!', true);
+                return;
+            }
+            
+            fetch('/set_cookie', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, value, expiry })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showStatus(data.message || "Cookie set successfully");
+                document.getElementById('cookieName').value = '';
+                document.getElementById('cookieValue').value = '';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showStatus('Failed to set cookie', true);
+            });
+        }
+        
+        // Get cookies
+        function getCookies() {
+            fetch('/get_cookies')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('cookieListContainer');
+                
+                if (Object.keys(data).length > 0) {
+                    let html = '<div class="cookie-list">';
+                    
+                    for (const [name, details] of Object.entries(data)) {
+                        html += `<div class="cookie-item">
+                            <div>
+                                <span class="cookie-name">${name}</span>
+                                <span class="secure-tag">Secure</span>
+                                <span class="httponly-tag">HttpOnly</span>
+                                <div class="cookie-value">${details.value} (Encrypted)</div>
+                                <small>Expires: ${details.expires}</small>
+                            </div>
+                            <button onclick="deleteCookieByName('${name}')">Delete</button>
+                        </div>`;
+                    }
+                    
+                    html += '</div>';
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<p>No cookies found</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showStatus('Failed to retrieve cookies', true);
+            });
+        }
+        
+        // Delete cookie
+        function deleteCookie() {
+            const name = document.getElementById('deleteCookieName').value;
+            
+            if (!name) {
+                showStatus('Cookie name is required!', true);
+                return;
+            }
+            
+            deleteCookieByName(name);
+        }
+        
+        // Delete cookie by name (used by both delete methods)
+        function deleteCookieByName(name) {
+            fetch('/delete_cookie', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showStatus(data.error, true);
+                } else {
+                    showStatus(data.message || "Cookie deleted successfully");
+                    document.getElementById('deleteCookieName').value = '';
+                    getCookies(); // Refresh cookie list
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showStatus('Failed to delete cookie', true);
+            });
+        }
+        
+        // Initialize
+        window.onload = function() {
+            getCookies();
+        };
+    </script>
+</body>
+</html>

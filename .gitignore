@@ -1,0 +1,27 @@
+# Byte-compiled / cached files
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+.env
+
+# Flask and Python-related logs
+*.log
+instance/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE-specific files
+.vscode/
+*.swp
+*.swo
+
+# Localhost settings
+config.json
+
+# Exclude HTML if dynamically generated
+*.bak
+*.tmp
